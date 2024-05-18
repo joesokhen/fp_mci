@@ -56,6 +56,8 @@ public class MainActivity extends AppCompatActivity {
                 loadStudentsFromDatabase();
             }
         });
+
+        loadStudentsFromDatabase();
     }
 
     private void addStudentToDatabase(String name) {
