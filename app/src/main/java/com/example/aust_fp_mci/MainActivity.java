@@ -79,5 +79,6 @@ public class MainActivity extends AppCompatActivity {
             } while (cursor.moveToNext());
         }
         cursor.close(); // Release cursor from memory.
+        adapter.notifyDataSetChanged(); // Notify the adapter that data set has changed.
     }
 }
