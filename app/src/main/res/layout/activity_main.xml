@@ -8,12 +8,21 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <EditText
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textInputLayoutStudentName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:autofillHints="Enter Student Name"
-        android:id="@+id/editTextStudentName"/>
+        app:boxStrokeColor="@color/purple_200"
+        app:boxStrokeWidth="2dp"
+        app:endIconMode="clear_text">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editTextStudentName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter Student Name" />
+    </com.google.android.material.textfield.TextInputLayout>
 
     <Button
         android:id="@+id/btnAddStudent"
