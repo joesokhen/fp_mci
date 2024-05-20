@@ -13,12 +13,11 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.ArrayAdapter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Date;
+import android.widget.SimpleCursorAdapter;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
+import android.content.ContentValues;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,8 +25,6 @@ public class MainActivity extends AppCompatActivity {
     private TextInputEditText editTextStudentName;
     private ListView listViewStudents;
     private Button btnAddStudent;
-    private ArrayAdapter<String> adapter;
-    private List<String> studentList;
 
 
     @Override
@@ -46,11 +43,6 @@ public class MainActivity extends AppCompatActivity {
         listViewStudents = findViewById(R.id.listViewStudents);
         btnAddStudent = findViewById(R.id.btnAddStudent);
 
-        studentList = new ArrayList<>();
-        // simple_list_item_1 is generic layout used in the list.
-        adapter = new ArrayAdapter<>(this, R.layout.student_list_item, R.id.textViewDate, studentList);
-        listViewStudents.setAdapter(adapter);
-
         btnAddStudent.setOnClickListener(v -> {
             String studentName = editTextStudentName.getText().toString();
             if (!studentName.isEmpty()) {
@@ -65,30 +57,41 @@ public class MainActivity extends AppCompatActivity {
 
     private void addStudentToDatabase(String name) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        String currentDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
-        String insertQuery = "INSERT INTO " + StudentDatabaseHelper.TABLE_STUDENTS + " (" +
-                StudentDatabaseHelper.COLUMN_NAME + ", " + StudentDatabaseHelper.COLUMN_DATE + ") VALUES ('" + name + "', '" + currentDate + "')";
-        db.execSQL(insertQuery);
+        // Content Values is an easy & straightforward alternative to INSERT QUERY.
+        ContentValues values = new ContentValues();
+        values.put(StudentDatabaseHelper.COLUMN_NAME, name);
+        values.put(StudentDatabaseHelper.COLUMN_DATE, getCurrentDateTime());
+        values.put(StudentDatabaseHelper.COLUMN_STATUS, 1); // Set status to 1 indicating attendance
+        db.insert(StudentDatabaseHelper.TABLE_STUDENTS, null, values);
     }
 
     private void loadStudentsFromDatabase() {
-        // Without it the list duplicate on entry update, so we ensure to clear then repopulate it.
-        studentList.clear();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         String selectQuery = "SELECT * FROM " + StudentDatabaseHelper.TABLE_STUDENTS;
         Cursor cursor = db.rawQuery(selectQuery, null);
-        if (cursor.moveToFirst()) {
-            int nameColumnIndex = cursor.getColumnIndex(StudentDatabaseHelper.COLUMN_NAME);
-            int dateColumnIndex = cursor.getColumnIndex(StudentDatabaseHelper.COLUMN_DATE);
-            if (nameColumnIndex != -1 && dateColumnIndex != -1) { // Check if column indices are valid
-                do {
-                    String name = cursor.getString(nameColumnIndex);
-                    String date = cursor.getString(dateColumnIndex);
-                    studentList.add(date + " - " + name); // Combine date and name for display
-                } while (cursor.moveToNext());
+
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(
+                this,
+                R.layout.student_list_item,
+                cursor,
+                new String[] { StudentDatabaseHelper.COLUMN_DATE, StudentDatabaseHelper.COLUMN_NAME, StudentDatabaseHelper.COLUMN_STATUS },
+                new int[] { R.id.textViewDate, R.id.textViewName, R.id.statusIndicator },
+                0
+        );
+
+        adapter.setViewBinder((view, cursor1, columnIndex) -> {
+            if (view.getId() == R.id.statusIndicator) {
+                int status = cursor1.getInt(columnIndex);
+                view.setBackgroundResource(status == 1 ? R.drawable.circle_green : R.drawable.circle_red);
+                return true;
             }
-        }
-        cursor.close(); // Release cursor from memory.
-        adapter.notifyDataSetChanged(); // Notify the adapter that data set has changed.
+            return false;
+        });
+
+        listViewStudents.setAdapter(adapter); // SimpleCursorAdapter notify changes.
+    }
+
+    private String getCurrentDateTime() {
+        return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
     }
 }
