@@ -11,11 +11,13 @@ public class StudentDatabaseHelper extends SQLiteOpenHelper {
     public static final String TABLE_STUDENTS = "students";
     public static final String COLUMN_ID = "_id";
     public static final String COLUMN_NAME = "name";
+    public static final String COLUMN_DATE = "date";
 
     private static final String TABLE_STUDENTS_CREATE =
             "CREATE TABLE " + TABLE_STUDENTS + " (" +
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    COLUMN_NAME + " TEXT NOT NULL);";
+                    COLUMN_NAME + " TEXT NOT NULL, " +
+                    COLUMN_DATE + " TEXT NOT NULL);";
 
     public StudentDatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

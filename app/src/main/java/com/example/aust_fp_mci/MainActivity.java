@@ -16,6 +16,9 @@ import android.widget.ListView;
 import android.widget.ArrayAdapter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Date;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -45,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
 
         studentList = new ArrayList<>();
         // simple_list_item_1 is generic layout used in the list.
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, studentList);
+        adapter = new ArrayAdapter<>(this, R.layout.student_list_item, R.id.textViewDate, studentList);
         listViewStudents.setAdapter(adapter);
 
         btnAddStudent.setOnClickListener(v -> {
@@ -62,8 +65,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void addStudentToDatabase(String name) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
+        String currentDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
         String insertQuery = "INSERT INTO " + StudentDatabaseHelper.TABLE_STUDENTS + " (" +
-                StudentDatabaseHelper.COLUMN_NAME + ") VALUES ('" + name + "')";
+                StudentDatabaseHelper.COLUMN_NAME + ", " + StudentDatabaseHelper.COLUMN_DATE + ") VALUES ('" + name + "', '" + currentDate + "')";
         db.execSQL(insertQuery);
     }
 
@@ -71,12 +75,18 @@ public class MainActivity extends AppCompatActivity {
         // Without it the list duplicate on entry update, so we ensure to clear then repopulate it.
         studentList.clear();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.query(StudentDatabaseHelper.TABLE_STUDENTS, null, null, null, null, null, null);
+        String selectQuery = "SELECT * FROM " + StudentDatabaseHelper.TABLE_STUDENTS;
+        Cursor cursor = db.rawQuery(selectQuery, null);
         if (cursor.moveToFirst()) {
-            do {
-                String name = cursor.getString(cursor.getColumnIndexOrThrow(StudentDatabaseHelper.COLUMN_NAME));
-                studentList.add(name);
-            } while (cursor.moveToNext());
+            int nameColumnIndex = cursor.getColumnIndex(StudentDatabaseHelper.COLUMN_NAME);
+            int dateColumnIndex = cursor.getColumnIndex(StudentDatabaseHelper.COLUMN_DATE);
+            if (nameColumnIndex != -1 && dateColumnIndex != -1) { // Check if column indices are valid
+                do {
+                    String name = cursor.getString(nameColumnIndex);
+                    String date = cursor.getString(dateColumnIndex);
+                    studentList.add(date + " - " + name); // Combine date and name for display
+                } while (cursor.moveToNext());
+            }
         }
         cursor.close(); // Release cursor from memory.
         adapter.notifyDataSetChanged(); // Notify the adapter that data set has changed.
