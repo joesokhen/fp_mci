@@ -8,14 +8,14 @@ public class StudentDatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "studentAttendance.db";
     private static final int DATABASE_VERSION = 1;
-    public static final String TABLE_STUDENTS = "students";
+    public static final String TABLE_NAME = "students";
     public static final String COLUMN_ID = "_id";
     public static final String COLUMN_NAME = "name";
     public static final String COLUMN_DATE = "date";
     public static final String COLUMN_STATUS = "status";
 
-    private static final String TABLE_STUDENTS_CREATE =
-            "CREATE TABLE " + TABLE_STUDENTS + " (" +
+    private static final String TABLE_NAME_CREATE =
+            "CREATE TABLE " + TABLE_NAME + " (" +
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     COLUMN_NAME + " TEXT NOT NULL, " +
                     COLUMN_DATE + " TEXT NOT NULL, " +
@@ -27,12 +27,12 @@ public class StudentDatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(TABLE_STUDENTS_CREATE);
+        db.execSQL(TABLE_NAME_CREATE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_STUDENTS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
         onCreate(db);
     }
 }
